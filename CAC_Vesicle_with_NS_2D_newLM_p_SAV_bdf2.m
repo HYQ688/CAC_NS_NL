@@ -103,7 +103,7 @@ Q0  = 1;
 
 %% initialization phi 1
 time1 = time; time1.T = dt;
-[phi1,u1,v1,p1,Q1,~,~] = CAC_Vesicle_with_NS_2D_newLM_p_SAV_1st(pde,domain,Nx,Ny,time1,option);
+[phi1,u1,v1,p1,Q1,~,eta_2_init] = CAC_Vesicle_with_NS_2D_newLM_p_SAV_1st(pde,domain,Nx,Ny,time1,option);
 mu1 = lambda.*( epsilon.*lap_diff(lap_diff(phi1)) + w(phi1));
 t = t+dt;
 
@@ -169,13 +169,13 @@ for nt = 2:nplot
     %step 3
     nu_11 = get_nu(utilde_11,vtilde_11,mu_11,phi_star,mu_star,u_star,v_star);
     nu_12 = get_nu(utilde_12,vtilde_12,mu_12,phi_star,mu_star,u_star,v_star);
-    Q_1 = nu_11/(3-nu_12);
+    Q_1 = nu_11/(1-nu_12);
     nu_21 = get_nu(utilde_21,vtilde_21,mu_21,phi_star,mu_star,u_star,v_star);
     nu_22 = get_nu(utilde_22,vtilde_22,mu_22,phi_star,mu_star,u_star,v_star);
-    Q_2 = nu_21/(3-nu_22);
-    nu_31 = get_nu(utilde_31,vtilde_31,mu_31,phi_star,mu_star,u_star,v_star) + (4*Q1-Q0);
+    Q_2 = nu_21/(1-nu_22);
+    nu_31 = get_nu(utilde_31,vtilde_31,mu_31,phi_star,mu_star,u_star,v_star) + (4*Q1-Q0)./3;
     nu_32 = get_nu(utilde_32,vtilde_32,mu_32,phi_star,mu_star,u_star,v_star);
-    Q_3 = nu_31/(3-nu_32);
+    Q_3 = nu_31/(1-nu_32);
 
     %step 4
     phi_1 = phi_11 + Q_1*phi_12; phi_2 = phi_21 + Q_2*phi_22; phi_3 = phi_31 + Q_3*phi_32;
@@ -186,6 +186,7 @@ for nt = 2:nplot
     %step 5
     eta_2_initial = fun_inner(delta_A(phi_star),4*phi1-phi0-3*(phi_1+phi_3)) ./ fun_inner(delta_A(phi_star),3*phi_2);
     % eta_2_initial = fun_inner(delta_A(phi1),phi1-phi_1-phi_3) ./ fun_inner(delta_A(phi1),phi_2);
+    % eta_2_initial = eta_2_init;
     eta_2 = fsolve(@(eta_2)non_fun1(eta_2,phi_1,phi_2,phi_3,phi_init),eta_2_initial,...
                    opts);
     
@@ -334,7 +335,7 @@ global dt hx hy
                  -mu_star.*((diff_x(phi_star).*u + diff_y(phi_star).*v)) ...
                  +(u_star.*diff_x(u_star) + v_star.*diff_y(u_star)).*u ...
                  +(u_star.*diff_x(v_star) + v_star.*diff_y(v_star)).*v) ;
-    result = 2*dt.*result(1,1)*hx*hy;
+    result = 2*dt./3.*result(1,1)*hx*hy;
 end
 
 function r = fun_inner(f,g)
@@ -440,11 +441,11 @@ end
 function r = non_fun2(eta_1,eta_2,phi_1,phi_2,phi_3,phi1,phi0)
 global hx hy
     phi_star = 2*phi1 - phi0 ;
-    left = fft2(3.*W(eta_1.*phi_1+eta_2.*phi_2+phi_3)-4.*W(phi1)+W(phi0));
+    left = 3.*W(eta_1.*phi_1+eta_2.*phi_2+phi_3)-4.*W(phi1)+W(phi0);
 %     left = 3.*W(phi_1+eta.*phi_2+lambda.*phi_3) - 4.*W(phi1) + W(phi0); 
     right1 = eta_1.*fft2(delta_W(phi_star).*(3.*(eta_1.*phi_1+eta_2.*phi_2+phi_3)-4.*phi1+phi0));
     right2 = eta_2.*fft2(delta_A(phi_star).*(3.*(eta_1.*phi_1+eta_2.*phi_2+phi_3)-4.*phi1+phi0));
-    r = left(1,1)*hx*hy - right1(1,1)*hx*hy  + right2(1,1)*hx*hy ;
+    r = left - right1(1,1)*hx*hy  + right2(1,1)*hx*hy ;
 end
 
 

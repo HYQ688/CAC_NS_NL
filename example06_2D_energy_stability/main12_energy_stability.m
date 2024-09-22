@@ -13,8 +13,8 @@ domain.top    = 2*pi;
 Lx = domain.right - domain.left;
 Ly = domain.top   - domain.bottom;
 
-% scheme1 = 'linear';
-scheme1 = 'nonlinear';
+scheme1 = 'linear';
+% scheme1 = 'nonlinear';
 % scheme1 = 'MSAV';
 
 % scheme2 = '_1st';   % First-order scheme
@@ -44,15 +44,25 @@ pde = ex03_Vesicles_data(para);
 
 else
 % Parameters
+%linear
+% para.epsilon = 6*pi/128;
+% para.gamma = 1;
+% para.Re = 1;
+% para.lambda = 1;
+% para.C0 = 100;
+% para.S1 = 4;
+% para.S2 = 4;
+% para.S3 = 1;
+
+%nonlinear
 para.epsilon = 6*pi/128;
-% para.epsilon = 0.07;
 para.gamma = 1;
 para.Re = 1;
 para.lambda = 1;
 para.C0 = 100;
 para.S1 = 4;
 para.S2 = 4;
-para.S3 = 1 ;
+para.S3 = 1;
 
 para.name = [scheme,'_ex02_Vesicles_data'];
 pde = ex02_Vesicles_data(para);
@@ -63,7 +73,8 @@ N  = 64;
 % T = 2; %linear_1st  linear_bdf2
 T =2; % nonlinear_1st nonlinear_bdf2
 % T = 2;
-array = 3:6;
+array = 0:5;
+% array = 0:4;
 dt_array = 0.01./2.^array';
 dt_ref = 1e-5;
 
@@ -107,13 +118,13 @@ end
 
 %% Run:
 % delete *.mat
-% if ~isfield(pde,'exactu') || ~isfield(pde,'rhs2')
-%     for k = 1:maxIt
-%         dt = dt_array(k);
-%         time = struct('T',T,'t0',t0,'dt',dt,'tsave',tsave);
-%         solver_fun(pde,domain,Nx,Ny,time,option);
-%     end
-% end
+if ~isfield(pde,'exactu') || ~isfield(pde,'rhs2')
+    for k = 1:maxIt
+        dt = dt_array(k);
+        time = struct('T',T,'t0',t0,'dt',dt,'tsave',tsave);
+        solver_fun(pde,domain,Nx,Ny,time,option);
+    end
+end
 toc
 %% Original energy
 figure;

@@ -445,9 +445,9 @@ end
 
 function r = non_fun2(eta_1,eta_2,phi_1,phi_2,phi_3,phi0)
 global hx hy
-    left = fft2(W(eta_1.*phi_1+eta_2.*phi_2+phi_3)-W(phi0));
+    left = W(eta_1.*phi_1+eta_2.*phi_2+phi_3)-W(phi0);
     right1 = eta_1.*fft2(delta_W(phi0).*(eta_1.*phi_1+eta_2.*phi_2+phi_3-phi0));
     right2 = eta_2.*fft2(delta_A(phi0).*(eta_1.*phi_1+eta_2.*phi_2+phi_3-phi0));
-    r = left(1,1)*hx*hy - right1(1,1)*hx*hy  + right2(1,1)*hx*hy ;
+    r = left - right1(1,1)*hx*hy  + right2(1,1)*hx*hy ;
 end
 
